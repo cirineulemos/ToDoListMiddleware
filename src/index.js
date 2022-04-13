@@ -39,7 +39,9 @@ function checksTodoExists(request, response, next) {
   const { username } = request.headers;
   const { id } = request.params;
 
-  if (!validatedUUID && id != validatedUUID) {
+  const validatedUUID = validate(id);
+
+  if (!validatedUUID) {
     return response.status(400).json({ error: "ID is not an UUID" })
   }
 
@@ -81,7 +83,7 @@ app.post('/users', (request, response) => {
   const usernameAlreadyExists = users.some((user) => user.username === username);
 
   if (usernameAlreadyExists) {
-    return response.status(404).json({ error: 'Username already exists' });
+    return response.status(400).json({ error: 'Username already exists' });
   }
 
   const user = {
