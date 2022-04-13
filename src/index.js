@@ -10,19 +10,69 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+
+  const user = users.find(users => username === users.username)
+
+  if (!user) {
+    return response.status(404).json({ error: "User not found" });
+  };
+
+  request.user = user;
+
+  return next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request
+
+  const count = user.todos.length;
+
+  if (user.pro === false && count >= 10) {
+    return response.status(403).json({ error: "User already use his free trial" });
+  }
+
+  return next();
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  if (!validatedUUID && id != validatedUUID) {
+    return response.status(400).json({ error: "ID is not an UUID" })
+  }
+
+  const user = users.find(users => username === users.username);
+
+  if (!user) {
+    return response.status(404).json({ error: "User not found" });
+  };
+
+  const todo = user.todos.find(todo => id === todo.id);
+
+  if (!todo) {
+    return response.status(404).json({ error: "Todo not found" });
+  }
+
+  request.user = user;
+  request.todo = todo;
+
+  return next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+
+  const user = users.find(users => id === users.id)
+
+  if (!user) {
+    return response.status(404).json({ error: "User not found" });
+  };
+
+  request.user = user;
+
+  return next();
 }
 
 app.post('/users', (request, response) => {
@@ -31,7 +81,7 @@ app.post('/users', (request, response) => {
   const usernameAlreadyExists = users.some((user) => user.username === username);
 
   if (usernameAlreadyExists) {
-    return response.status(400).json({ error: 'Username already exists' });
+    return response.status(404).json({ error: 'Username already exists' });
   }
 
   const user = {
